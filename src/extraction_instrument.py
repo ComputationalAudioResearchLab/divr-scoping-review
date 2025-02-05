@@ -22,9 +22,7 @@ class ExtractionInstrument:
 
     __num_articles = 74
 
-    def __init__(self) -> None:
-        curdir = Path(__file__).parent.resolve()
-        data_file_path = f"{curdir}/../data/Scoping Review Extraction.xlsx"
+    def __init__(self, data_file_path: Path) -> None:
         self.__workbook = pd.read_excel(data_file_path, sheet_name=self.__sheets)
 
     @property
@@ -105,6 +103,12 @@ class ExtractionInstrument:
                 "EGG",
                 "Unspecified",
             ]
+        ]
+
+    @property
+    def diagnostic_class_counts(self):
+        return self.__workbook["Diagnostic class numbers"].iloc[: self.__num_articles][
+            "Count of different classes"
         ]
 
     @property

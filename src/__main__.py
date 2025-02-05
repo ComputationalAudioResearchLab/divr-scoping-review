@@ -1,3 +1,4 @@
+from pathlib import Path
 from class_argparse import ClassArgParser
 
 from .reporter import Reporter
@@ -7,10 +8,18 @@ class Main(ClassArgParser):
 
     def __init__(self) -> None:
         super().__init__(name="BMJ Scoping Review")
-        self.__reporter = Reporter()
+        curdir = Path(__file__).parent.resolve()
+        data_file_path = Path(f"{curdir}/../data/Scoping Review Extraction.xlsx")
+        figures_path = Path(f"{curdir}/../figures")
+        self.__reporter = Reporter(
+            data_file_path=data_file_path, figures_path=figures_path
+        )
 
     def print_extraction_instrument(self):
         self.__reporter.print_extraction_instrument()
+
+    def classification_labels(self):
+        self.__reporter.classification_labels()
 
     def classification_pipeline(self):
         self.__reporter.classification_pipeline()
