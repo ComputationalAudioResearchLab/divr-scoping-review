@@ -1,0 +1,19 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+holoviews = "==1.20.0"
+pandas = "==2.2.3"
+networkx = "==3.4.2"
+class-argparse = "==0.1.3"
+openpyxl = "==3.1.5"
+
+[dev-packages]
+black = "==22.10.0"
+flake8 = "==6.0.0"
+pylint = "==2.17.4"
+
+[requires]
+python_version = "3.10"
