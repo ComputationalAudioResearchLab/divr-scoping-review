@@ -8,6 +8,7 @@ class ExtractionInstrument:
 
     __sheets = [
         "Main",
+        "Classification Pipeline",
         "Train test set sizes",
         "Models",
         "Features",
@@ -28,6 +29,10 @@ class ExtractionInstrument:
     @property
     def main(self):
         return self.__workbook["Main"]
+
+    @property
+    def classification_pipeline(self):
+        return self.__workbook["Classification Pipeline"]
 
     @property
     def train_test_set_sizes(self):

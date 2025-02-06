@@ -10,6 +10,9 @@ networkx = "==3.4.2"
 class-argparse = "==0.1.3"
 openpyxl = "==3.1.5"
 matplotlib = "==3.10.0"
+plotly = "==6.0.0"
+kaleido = "==0.2.1"
+seaborn = "==0.13.2"
 
 [dev-packages]
 black = "==22.10.0"
