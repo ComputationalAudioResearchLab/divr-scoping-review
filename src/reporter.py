@@ -203,7 +203,8 @@ class Reporter:
         #         alpha = 0.25
         #         plt.axvline(x=x, color="black", alpha=alpha, linewidth=1)
         ax.tick_params(labelsize=24)
-        c_ax = plt.axes([0.915, 0.11, 0.01, 0.77])
+        # c_ax = plt.axes([0.915, 0.11, 0.01, 0.77])
+        c_ax = plt.axes([0.995, 0.11, 0.01, 0.77])
         matplotlib.colorbar.Colorbar(
             ax=c_ax,
             cmap=cmap,
@@ -211,6 +212,63 @@ class Reporter:
             ticks=range(1, max_frequency + 1),
         )
         c_ax.tick_params(labelsize=24)
+
+        hist_x_axis = plt.axes(
+            [0.125, 0.885, 0.775, 0.077],
+        )
+        hist_x_axis.hist(
+            x=df["Input Data"],
+            bins=12,
+            orientation="vertical",
+            color="#A1E3F9",
+        )
+        hist_x_axis.set_ylim(0, 60)
+        ticks = [0, 30, 60]
+        hist_x_axis.set_yticks(ticks=ticks, labels=ticks)
+        ticks = np.linspace(0.47, 10.53, 12)
+        hist_x_axis.set_xticks(
+            ticks=ticks,
+            labels=ticks,
+            rotation=90,
+            alpha=0.0,
+        )
+        hist_x_axis.tick_params(labelsize=24)
+        hist_x_axis.margins(0)
+        hist_x_axis.grid(
+            # color='green',
+            # linestyle="--",
+            linewidth=1,
+            alpha=0.5,
+        )
+
+        hist_y_axis = plt.axes([0.905, 0.11, 0.085, 0.77])
+        hist_y_axis.hist(
+            x=df["Model"],
+            bins=14,
+            orientation="horizontal",
+            color="#CFEE91",
+        )
+
+        ticks = [0, 15, 30]
+        hist_y_axis.set_xlim(0, 30)
+        hist_y_axis.set_xticks(ticks=ticks, labels=ticks, rotation=90)
+        hist_y_axis.margins(0)
+        ticks = np.linspace(0.47, 12.53, 14)
+        hist_y_axis.set_yticks(
+            ticks=ticks,
+            labels=ticks,
+            rotation=90,
+            alpha=0.0,
+        )
+        hist_y_axis.tick_params(labelsize=24)
+        hist_y_axis.margins(0)
+        hist_y_axis.grid(
+            # color='green',
+            # linestyle="--",
+            linewidth=1,
+            alpha=0.5,
+        )
+
         fig.savefig(f"{self.__figures_path}/circles_2.png", bbox_inches="tight")
         # print(df.to_numpy())
 
