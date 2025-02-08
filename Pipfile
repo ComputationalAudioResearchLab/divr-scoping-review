@@ -13,6 +13,9 @@ matplotlib = "==3.10.0"
 plotly = "==6.0.0"
 kaleido = "==0.2.1"
 seaborn = "==0.13.2"
+scikit-image = "*"
+datashader = "==0.17.0"
+dask = "==2025.1.0"
 
 [dev-packages]
 black = "==22.10.0"
