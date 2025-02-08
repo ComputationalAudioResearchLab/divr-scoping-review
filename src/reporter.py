@@ -3,8 +3,10 @@ import pandas as pd
 import networkx as nx
 import seaborn as sns
 import holoviews as hv
+import circlify as circ
+import matplotlib.colorbar
 from pathlib import Path
-from bokeh.io import export_svgs
+import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 
 from .extraction_instrument import ExtractionInstrument
@@ -62,6 +64,257 @@ class Reporter:
         hv.save(
             obj=heatmap, filename=f"{self.__figures_path}/classification_labels.html"
         )
+
+    def classification_circles_2(self):
+        pipeline = self.__extraction_instrument.classification_pipeline
+        pipeline = pipeline.dropna(subset=["Input Data"])
+        print(pipeline)
+
+        group = ["Input Data", "Input Feature", "Model"]
+        counts = pipeline.groupby(by=group)["Model"].count()
+        df = pd.merge(
+            left=pipeline.drop_duplicates(subset=group),
+            right=counts,
+            left_on=group,
+            right_index=True,
+        )
+        df = df[group + ["Model_y"]].rename(columns={"Model_y": "frequency"})
+        print(df)
+        df["Input Data"], input_data_encoding = self.label_encode(df["Input Data"])
+        # df["Input Feature"], input_feature_encoding = self.label_encode(
+        #     df["Input Feature"]
+        # )
+        df["Model"], model_encoding = self.label_encode(df["Model"])
+        df = df[["Input Data", "Input Feature", "Model", "frequency"]]
+        x_tick_labels = list(input_data_encoding.keys())
+        y_tick_labels = list(model_encoding.keys())
+        print(df)
+
+        def packed_circles(row: pd.DataFrame):
+            row = row.sort_values(by="frequency", ascending=False, inplace=False)
+            radii = [1] * len(row)
+            circs = circ.circlify(data=radii)
+            scale_factor = radii[0] / circs[0].r
+            circles = []
+            for circle, label, freq in zip(
+                circs, row["Input Feature"], row["frequency"]
+            ):
+                x = circle.x
+                y = circle.y
+                r = circle.r
+                circles += [{"x": x, "y": y, "r": r, "label": label, "frequency": freq}]
+            return pd.Series({"square_side": scale_factor * 2, "circles": circles})
+
+        groups = df.groupby(by=["Input Data", "Model"])
+        print("max packing in square: ", groups["Input Feature"].apply(len).max())
+        res = (
+            groups[["Input Feature", "frequency"]]
+            .apply(packed_circles)
+            .explode("circles")
+        )
+        print(res)
+        res = (
+            res.reset_index()
+            .join(pd.json_normalize(res["circles"]))
+            .drop(columns="circles")
+        )
+        res["radius_scale_factor"] = res["square_side"] / res["square_side"].max()
+        res["x"] = (res["x"] * res["radius_scale_factor"]) + (res["Input Data"] * 2)
+        res["y"] = (res["y"] * res["radius_scale_factor"]) + (res["Model"] * 2)
+        res["r"] = res["r"] * res["radius_scale_factor"]
+        label_keys = {
+            "MFCC": "a",
+            "Mel Spectrogram": "b",
+            "Other audio processing features": "c",
+            "Label Encoding": "d",
+            "EGG Spectrogram": "e",
+            "Wavelets": "f",
+            "Glottal signal": "g",
+            "NN features": "h",
+            "Raw Audio": "i",
+            "Bespoke Algorithm": "j",
+        }
+        res["label_key"] = res["label"].apply(label_keys.get)
+        print(res)
+        print(res["radius_scale_factor"].max())
+
+        cmap = plt.colormaps["YlGnBu"]
+        cmap_r = plt.colormaps["YlGnBu_r"]
+        # hue_encoding = self.label_encoding(ser=res["label"])
+        # palette = sns.palettes.color_palette(
+        #     palette="rocket", n_colors=len(hue_encoding)
+        # )
+        width = res["x"].max() - res["x"].min()
+        height = res["y"].max() - res["y"].min()
+        max_frequency = res["frequency"].max()
+        print(max_frequency)
+        fig, ax = plt.subplots(1, 1, figsize=(width, height))
+        print(res["square_side"].max())
+        for row_idx, row in res.iterrows():
+            x = row["x"]
+            y = row["y"]
+            r = row["r"]
+            label = row["label"]
+            label_key = row["label_key"]
+            frequency = row["frequency"]
+            # color = palette[hue_encoding[label]]
+            ratio = frequency / max_frequency
+            circle = plt.Circle((x, y), r, color=cmap(ratio), alpha=0.99, label=label)
+            ax.add_patch(circle)
+            fontshift = 0.1
+            fontcolor = "black" if ratio < 0.5 else "white"
+            plt.text(
+                x=x - fontshift,
+                y=y - fontshift,
+                s=label_key,
+                color=fontcolor,
+                fontdict={"size": 18},
+            )
+        for x in range(0, 23, 2):
+            for y in range(0, 27, 2):
+                circle = plt.Circle((x, y), 1, color="black", alpha=0.025)
+                ax.add_patch(circle)
+        padding = 1
+        ax.set_xlim(0 - padding, 22 + padding)
+        ax.set_ylim(0 - padding, 26 + padding)
+        ax.set_xticks(
+            ticks=range(0, int(width + padding * 2), 2),
+            labels=x_tick_labels,
+            rotation=90,
+        )
+        ax.set_yticks(
+            ticks=range(0, int(height + padding * 2), 2),
+            labels=y_tick_labels,
+            rotation=0,
+        )
+        ax.grid(
+            # color='green',
+            # linestyle="--",
+            linewidth=1,
+            alpha=0.5,
+        )
+        # Fake grid
+        # for y in range(-1, 27, 1):
+        #     if (y % 2) == 0:
+        #         alpha = 0.25
+        #         plt.axhline(y=y, color="black", alpha=alpha, linewidth=1)
+        # for x in range(-1, 23, 1):
+        #     if (y % 2) == 0:
+        #         alpha = 0.25
+        #         plt.axvline(x=x, color="black", alpha=alpha, linewidth=1)
+        ax.tick_params(labelsize=24)
+        c_ax = plt.axes([0.915, 0.11, 0.01, 0.77])
+        matplotlib.colorbar.Colorbar(
+            ax=c_ax,
+            cmap=cmap,
+            values=range(1, max_frequency + 1),
+            ticks=range(1, max_frequency + 1),
+        )
+        c_ax.tick_params(labelsize=24)
+        fig.savefig(f"{self.__figures_path}/circles_2.png", bbox_inches="tight")
+        # print(df.to_numpy())
+
+    def classification_circles(self):
+        pipeline = self.__extraction_instrument.classification_pipeline
+        pipeline = pipeline.dropna(subset=["Input Data"])
+        print(pipeline)
+
+        group = ["Input Data", "Input Feature", "Model"]
+        counts = pipeline.groupby(by=group)["Model"].count()
+        df = pd.merge(
+            left=pipeline.drop_duplicates(subset=group),
+            right=counts,
+            left_on=group,
+            right_index=True,
+        )
+        df = df[group + ["Model_y"]].rename(columns={"Model_y": "frequency"})
+        print(df)
+        df["Input Data"], input_data_encoding = self.label_encode(df["Input Data"])
+        # df["Input Feature"], input_feature_encoding = self.label_encode(
+        #     df["Input Feature"]
+        # )
+        df["Model"], model_encoding = self.label_encode(df["Model"])
+        df = df[["Input Data", "Input Feature", "Model", "frequency"]]
+        print(df)
+
+        def packed_circles(row: pd.DataFrame):
+            row = row.sort_values(by="frequency", ascending=False, inplace=False)
+            radii = row["frequency"].tolist()
+            circs = circ.circlify(data=radii)
+            scale_factor = radii[0] / circs[0].r
+            circles = []
+            for circle, label in zip(circs, row["Input Feature"]):
+                x = circle.x
+                y = circle.y
+                r = circle.r
+                circles += [{"x": x, "y": y, "r": r, "label": label}]
+            return pd.Series({"square_side": scale_factor * 2, "circles": circles})
+
+        groups = df.groupby(by=["Input Data", "Model"])
+        print("max packing in square: ", groups["Input Feature"].apply(len).max())
+        res = (
+            groups[["Input Feature", "frequency"]]
+            .apply(packed_circles)
+            .explode("circles")
+        )
+        print(res)
+        res = (
+            res.reset_index()
+            .join(pd.json_normalize(res["circles"]))
+            .drop(columns="circles")
+        )
+        res["radius_scale_factor"] = res["square_side"] / res["square_side"].max()
+        res["x"] = (res["x"] * res["radius_scale_factor"]) + (res["Input Data"] * 2)
+        res["y"] = (res["y"] * res["radius_scale_factor"]) + (res["Model"] * 2)
+        res["r"] = res["r"] * res["radius_scale_factor"]
+        print(res)
+        print(res["radius_scale_factor"].max())
+
+        # cmap = plt.colormaps["coolwarm_r"]
+        hue_encoding = self.label_encoding(ser=res["label"])
+        palette = sns.palettes.color_palette(
+            palette="rocket", n_colors=len(hue_encoding)
+        )
+        width = res["x"].max() - res["x"].min()
+        height = res["y"].max() - res["y"].min()
+        fig, ax = plt.subplots(1, 1, figsize=(width, height))
+        print(res["square_side"].max())
+        min_radius = res["r"].max() * 0.005  # 0.5% of biggest radius
+        for row_idx, row in res.iterrows():
+            x = row["x"]
+            y = row["y"]
+            r = row["r"]
+            label = row["label"]
+            color = palette[hue_encoding[label]]
+            # color = cmap(row["r"])
+            if r >= min_radius:
+                circle = plt.Circle((x, y), r, color=color, alpha=0.99, label=label)
+                ax.add_patch(circle)
+            else:
+                plt.text(x=x, y=y, s="x", color=color)
+        padding = 1
+        ax.set_xlim(res["x"].min() - padding, res["x"].max() + padding)
+        ax.set_ylim(res["y"].min() - padding, res["y"].max() + padding)
+        ax.set_xticks(ticks=range(int(width + padding * 2)))
+        ax.set_yticks(ticks=range(int(height + padding * 2)))
+        # ax.margins(0)
+        ax.grid(
+            # color='green',
+            # linestyle="--",
+            linewidth=0.5,
+        )
+        fig.savefig(f"{self.__figures_path}/circles.png", bbox_inches="tight")
+        # print(df.to_numpy())
+
+    def label_encode(
+        self, ser: "pd.Series[str]"
+    ) -> tuple["pd.Series[int]", dict[int, str]]:
+        encoding = self.label_encoding(ser=ser)
+        encoded_ser = ser.apply(encoding.get)
+        return (encoded_ser, encoding)
+
+    def label_encoding(self, ser: "pd.Series[str]") -> dict[int, str]:
+        return {v: i for i, v in enumerate(sorted(ser.unique().tolist()))}
 
     def classification_pipeline(self):
         pipeline = self.__extraction_instrument.classification_pipeline
@@ -144,9 +397,10 @@ class Reporter:
                     edges += [(article_idx, input_feature, model, edge_value)]
 
                 if pd.notna(model_ensembling):
-                    edges += [(article_idx, model, model_ensembling, edge_value)]
+                    edges += [(article_idx, model, model_ensembling, edge_value, None)]
         edges = pd.DataFrame.from_records(
-            data=edges, columns=["article_idx", "source", "target", "edge_value"]
+            data=edges,
+            columns=["article_idx", "source", "target", "edge_value", "attribute"],
         )
         G = self.__network_graph(nodes=nodes, edges=edges)
         self.__hv_nx(G=G)
@@ -154,7 +408,7 @@ class Reporter:
         # self.__sankey_hv_png(nodes=nodes, edges=edges)
         # self.__sankey_plotly(nodes=nodes, edges=edges)
 
-    def __custom_pipeline_layout(self, G: nx.Graph) -> dict[int, list[float]]:
+    def __horizontal_pipeline_layout(self, G: nx.Graph) -> dict[int, list[float]]:
         xy_map = {
             "Input Data": {
                 "x": 0.00,
@@ -177,26 +431,26 @@ class Reporter:
                 "x": 0.20,
                 "y": [
                     "Already Balanced",
-                    "Explicitly Balanced",
-                    "Major Imbalance",
                     "Class Weights",
+                    "Explicitly Balanced",
                     "Minor Imbalance",
                     "Unspecified",
+                    "Major Imbalance",
                 ],
             },
             "Input Feature": {
                 "x": 0.40,
                 "y": [
                     "MFCC",
-                    "Glottal signal",
-                    "Other audio processing features",
                     "Label Encoding",
                     "Mel Spectrogram",
                     "NN features",
+                    "Glottal signal",
                     "Bespoke Algorithm",
                     "Raw Audio",
                     "Wavelets",
                     "EGG Spectrogram",
+                    "Other audio processing features",
                 ],
             },
             "Feature Selection": {
@@ -209,12 +463,11 @@ class Reporter:
                 "x": 0.80,
                 "y": [
                     "SVM",
-                    "DNN (complex NN arch)",
-                    "ANN (simple NN arch)",
                     "Decision Trees",
                     "Linear/Logistic Regression",
                     "RF",
                     "HMM",
+                    "ANN (simple NN arch)",
                     "Naïve Bayes",
                     "Gradient Boosting",
                     "GMM",
@@ -222,6 +475,7 @@ class Reporter:
                     "kNN/Clustering",
                     "Voting Classifier",
                     "Bayes Net",
+                    "DNN (complex NN arch)",
                 ],
             },
             "Model Ensembling": {
@@ -246,9 +500,95 @@ class Reporter:
             layout[node_key] = [x, y]
         return layout
 
+    def __free_pipeline_layout(self, G: nx.Graph) -> dict[int, list[float]]:
+        xy_map = {
+            "Input Data": {
+                "Vowel /a/": [0 / 5, 11 / 11],
+                "Vowel /e/": [0 / 5, 10 / 11],
+                "Vowel /i/": [0 / 5, 9 / 11],
+                "Vowel /u/": [0 / 5, 8 / 11],
+                "/pataka/": [0 / 5, 7 / 11],
+                "Rainbow Passage": [0 / 5, 6 / 11],
+                "Sentence(s)": [0 / 5, 5 / 11],
+                "Multi-sentence passage": [0 / 5, 4 / 11],
+                "Repeated Word": [0 / 5, 3 / 11],
+                "Demographic questions": [0 / 5, 2 / 11],
+                "EGG": [0 / 5, 1 / 11],
+                "Unspecified": [0 / 5, 0 / 11],
+                # "Vowel /a/": [0 / 5, 11 / 11],
+                # "Vowel /e/": [-0.1 / 5, 10 / 11],
+                # "Vowel /i/": [-0.2 / 5, 9 / 11],
+                # "Vowel /u/": [-0.3 / 5, 8 / 11],
+                # "/pataka/": [-0.4 / 5, 7 / 11],
+                # "Rainbow Passage": [-0.5 / 5, 6 / 11],
+                # "Sentence(s)": [-0.50 / 5, 5 / 11],
+                # "Multi-sentence passage": [-0.4 / 5, 4 / 11],
+                # "Repeated Word": [-0.3 / 5, 3 / 11],
+                # "Demographic questions": [-0.2 / 5, 2 / 11],
+                # "EGG": [-0.1 / 5, 1 / 11],
+                # "Unspecified": [0 / 5, 0 / 11],
+            },
+            "Data Balancing": {
+                # "Already Balanced": [0.8 / 5, 8 / 10],
+                # "Class Weights": [0.7 / 5, 7 / 10],
+                # "Explicitly Balanced": [0.6 / 5, 6 / 10],
+                # "Minor Imbalance": [0.6 / 5, 5 / 10],
+                # "Unspecified": [0.7 / 5, 4 / 10],
+                # "Major Imbalance": [0.8 / 5, 3 / 10],
+                "Already Balanced": [-0.1, 0],
+                "Class Weights": [-0.1, 0],
+                "Explicitly Balanced": [-0.1, 0],
+                "Minor Imbalance": [-0.1, 0],
+                "Unspecified": [-0.1, 0],
+                "Major Imbalance": [-0.1, 0],
+            },
+            "Input Feature": {
+                "MFCC": [2 / 5, 9 / 9],
+                "Label Encoding": [2 / 5, 8 / 9],
+                "Mel Spectrogram": [2 / 5, 7 / 9],
+                "NN features": [2 / 5, 6 / 9],
+                "Glottal signal": [2 / 5, 5 / 9],
+                "Bespoke Algorithm": [2 / 5, 4 / 9],
+                "Raw Audio": [2 / 5, 3 / 9],
+                "Wavelets": [2 / 5, 2 / 9],
+                "EGG Spectrogram": [2 / 5, 1 / 9],
+                "Other audio processing features": [2 / 5, 0 / 9],
+            },
+            "Feature Selection": {
+                # "Feature Selection": [3 / 5, 1 / 1],
+                "Feature Selection": [-0.1, 0],
+            },
+            "Model": {
+                "SVM": [4 / 5, 13 / 13],
+                "Decision Trees": [4 / 5, 12 / 13],
+                "Linear/Logistic Regression": [4 / 5, 11 / 13],
+                "RF": [4 / 5, 10 / 13],
+                "HMM": [4 / 5, 9 / 13],
+                "ANN (simple NN arch)": [4 / 5, 8 / 13],
+                "Naïve Bayes": [4 / 5, 7 / 13],
+                "Gradient Boosting": [4 / 5, 6 / 13],
+                "GMM": [4 / 5, 5 / 13],
+                "PCA/LDA/DA": [4 / 5, 4 / 13],
+                "kNN/Clustering": [4 / 5, 3 / 13],
+                "Voting Classifier": [4 / 5, 2 / 13],
+                "Bayes Net": [4 / 5, 1 / 13],
+                "DNN (complex NN arch)": [4 / 5, 0 / 13],
+            },
+            "Model Ensembling": {
+                "Model Ensembling": [5 / 5, 1 / 1],
+            },
+        }
+        layout = {}
+        for node_key, node_data in G.nodes.items():
+            node_type = node_data["type"]
+            node_label = node_data["label"]
+            layout[node_key] = xy_map[node_type][node_label]
+        return layout
+
     def __hv_nx(self, G: nx.Graph) -> None:
         hv.extension("bokeh")
-        pos = self.__custom_pipeline_layout(G)
+        pos = self.__horizontal_pipeline_layout(G)
+        # pos = self.__free_pipeline_layout(G)
         pos_xy = np.array(list(pos.values()))
         pos_xy[:, 1] += 0.025
         pos_labels = [node["label"] for node in G.nodes.values()]
@@ -256,6 +596,7 @@ class Reporter:
         chart = hv.Graph.from_networkx(G, pos).opts(
             edge_color="article_idx",
             edge_cmap=edge_cmap,
+            edge_alpha=1.00,
         )
         labels = hv.Labels(
             {("x", "y"): pos_xy, "labels": pos_labels},
@@ -284,11 +625,6 @@ class Reporter:
             # },
         )
         hv.save(chart, f"{self.__figures_path}/classification_pipeline.html")
-        plot_state = hv.renderer("bokeh").get_plot(chart).state
-        plot_state.output_backend = "svg"
-        export_svgs(
-            plot_state, filename=f"{self.__figures_path}/classification_pipeline.svg"
-        )
 
     def __network_graph(self, nodes: pd.DataFrame, edges: pd.DataFrame):
         G = nx.Graph()

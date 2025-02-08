@@ -24,6 +24,12 @@ class Main(ClassArgParser):
     def classification_pipeline(self):
         self.__reporter.classification_pipeline()
 
+    def classification_circles_2(self):
+        self.__reporter.classification_circles_2()
+
+    def classification_circles(self):
+        self.__reporter.classification_circles()
+
 
 if __name__ == "__main__":
     Main()()

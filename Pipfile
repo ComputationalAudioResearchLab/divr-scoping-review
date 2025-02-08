@@ -16,6 +16,8 @@ seaborn = "==0.13.2"
 scikit-image = "*"
 datashader = "==0.17.0"
 dask = "==2025.1.0"
+pygraphviz = "==1.14"
+circlify = "==0.15.0"
 
 [dev-packages]
 black = "==22.10.0"

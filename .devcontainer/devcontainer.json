@@ -1,21 +1,21 @@
 {
-    "name": "divr-scoping-review",
-    "dockerComposeFile": "docker-compose.yml",
-    "service": "dev",
-    "workspaceFolder": "/home/workspace",
-    "customizations": {
-      "vscode": {
-        "extensions": [
-          "eamodio.gitlens",
-          "esbenp.prettier-vscode",
-          "hediet.vscode-drawio",
-          "ms-python.black-formatter",
-          "ms-python.flake8",
-          "ms-python.python"
-        ]
-      }
-    },
-    "shutdownAction": "none",
-    "onCreateCommand": "/home/workspace/init.sh"
-  }
-  
+  "name": "divr-scoping-review",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "dev",
+  "workspaceFolder": "/home/workspace",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "eamodio.gitlens",
+        "esbenp.prettier-vscode",
+        "hediet.vscode-drawio",
+        "ms-python.black-formatter",
+        "ms-python.flake8",
+        "ms-python.python",
+        "ms-vscode.live-server"
+      ]
+    }
+  },
+  "shutdownAction": "none",
+  "onCreateCommand": "/home/workspace/init.sh"
+}
