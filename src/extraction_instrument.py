@@ -273,3 +273,22 @@ class ExtractionInstrument:
     @property
     def protocol_checklist(self):
         return self.__workbook["Protocol Checklist"].iloc[: self.__num_articles]
+
+    def class_usage(self, min_usage: int):
+        class_numbers = self.diagnostic_class_numbers
+        class_numbers["counts"] = self.diagnostic_class_counts
+        class_numbers = class_numbers.drop(columns=["counts"])
+        column_names = class_numbers.columns.tolist()
+        class_presence = class_numbers.notna().astype(int)
+        dists = sorted(
+            [(class_presence[c].sum(), c) for c in column_names], key=lambda x: x[0]
+        )
+        selected_columns = [x[1] for x in dists if x[0] > min_usage]
+        return class_numbers[selected_columns]
+
+    def co_occurence(self, X: pd.DataFrame, Y: pd.DataFrame):
+        X = X.stack().notna().reset_index(level=1).rename(columns={"level_1": "X"})
+        Y = Y.stack().notna().reset_index(level=1).rename(columns={"level_1": "Y"})
+        pairs = X.merge(right=Y, left_index=True, right_index=True)
+        co_occurence = pairs.groupby(by=["X", "Y"])["0_x"].count().reset_index()
+        return co_occurence.rename(columns={"0_x": "frequency"})

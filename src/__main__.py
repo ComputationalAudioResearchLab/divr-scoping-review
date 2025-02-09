@@ -30,6 +30,9 @@ class Main(ClassArgParser):
     def classification_circles(self):
         self.__reporter.classification_circles()
 
+    def pipeline_per_label(self):
+        self.__reporter.pipeline_per_label()
+
 
 if __name__ == "__main__":
     Main()()

@@ -65,6 +65,103 @@ class Reporter:
             obj=heatmap, filename=f"{self.__figures_path}/classification_labels.html"
         )
 
+    def pipeline_per_label(self):
+        class_numbers = self.__extraction_instrument.class_usage(min_usage=5)
+        print(class_numbers)
+        C1 = self.__extraction_instrument.co_occurence(
+            X=class_numbers, Y=self.__extraction_instrument.input_data
+        )
+        print(C1)
+        C2 = self.__extraction_instrument.co_occurence(
+            X=class_numbers, Y=self.__extraction_instrument.features
+        )
+        print(C2)
+        C3 = self.__extraction_instrument.co_occurence(
+            X=class_numbers, Y=self.__extraction_instrument.models
+        )
+        print(C3)
+
+        np.set_printoptions(linewidth=100, precision=2)
+        # pdf = C1.pivot(index="Y", columns="X", values="frequency")
+        # A = pdf.to_numpy()
+        # print(A)
+        # B = np.tile(A.max(axis=0)[:, None], (1, A.shape[1]))
+        # print(B)
+        # normalized_A = A / B
+        # print(normalized_A)
+        # exit()
+
+        def heatmap(df: pd.DataFrame, ax, cmap, y_label: str):
+            df = df.pivot(index="Y", columns="X", values="frequency").fillna(0)
+            sns.heatmap(data=df, ax=ax, annot=True, cmap=cmap)
+            ax.set_xlabel(None)
+            ax.set_ylabel(y_label, labelpad=20, fontsize=18)
+            ax.tick_params(labelsize=14)
+
+        fig, ax = plt.subplots(
+            3,
+            1,
+            figsize=(10, 15),
+            constrained_layout=True,
+            sharex=True,
+        )
+        heatmap(df=C1, ax=ax[0], cmap="YlGn", y_label="Input Data Type")
+        heatmap(df=C2, ax=ax[1], cmap="GnBu", y_label="Feature")
+        heatmap(df=C3, ax=ax[2], cmap="BuPu", y_label="Model")
+        ax[2].set_xlabel("Diagnostic Label", fontsize=18)
+        fig.suptitle(
+            "Frequency of usage of data type/feature/model per diagnostic label",
+            fontsize=20,
+            y=1.03,
+        )
+        lines = [(1.0060, "#00000040"), (0.727, "#00000020"), (0.455, "#00000020")]
+        for y, c in lines:
+            fig.add_artist(
+                plt.Line2D(
+                    [0.00, 1.0],
+                    [y] * 2,
+                    color=c,
+                    lw=2,
+                    transform=fig.transFigure,
+                )
+            )
+        fig.canvas.draw()
+        self.align_labels(axes_list=ax, axis="y")
+        fig.savefig(
+            f"{self.__figures_path}/pipeline_per_label.png",
+            bbox_inches="tight",
+        )
+
+    def align_labels(self, axes_list, axis="y", align=None):
+        if align is None:
+            align = "l" if axis == "y" else "b"
+        yx, xy = [], []
+        for ax in axes_list:
+            yx.append(ax.yaxis.label.get_position()[0])
+            xy.append(ax.xaxis.label.get_position()[1])
+
+        if axis == "x":
+            if align in ("t", "top"):
+                lim = max(xy)
+            elif align in ("b", "bottom"):
+                lim = min(xy)
+        else:
+            if align in ("l", "left"):
+                lim = min(yx)
+            elif align in ("r", "right"):
+                lim = max(yx)
+
+        if align in ("t", "b", "top", "bottom"):
+            for ax in axes_list:
+                t = ax.xaxis.label.get_transform()
+                x, y = ax.xaxis.label.get_position()
+                ax.xaxis.set_label_coords(x, lim, t)
+        else:
+            for ax in axes_list:
+                t = ax.yaxis.label.get_transform()
+                x, y = ax.yaxis.label.get_position()
+                ax.yaxis.set_label_coords(lim, y, t)
+
     def classification_circles_2(self):
         pipeline = self.__extraction_instrument.classification_pipeline
         pipeline = pipeline.dropna(subset=["Input Data"])
