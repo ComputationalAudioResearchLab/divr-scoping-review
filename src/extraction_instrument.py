@@ -35,6 +35,15 @@ class ExtractionInstrument:
         return self.__workbook["Classification Pipeline"]
 
     @property
+    def data_balancing(self):
+        pipeline = self.__workbook["Classification Pipeline"][
+            ["Main File Index", "Data Balancing"]
+        ]
+        main_file_index = pipeline["Main File Index"].notna().to_numpy()
+        start_indices = main_file_index.nonzero()[0]
+        return pipeline["Data Balancing"].iloc[start_indices + 1].reset_index(drop=True)
+
+    @property
     def train_test_set_sizes(self):
         return self.__workbook["Train test set sizes"].iloc[: self.__num_articles][
             [

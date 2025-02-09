@@ -33,6 +33,9 @@ class Main(ClassArgParser):
     def pipeline_per_label(self):
         self.__reporter.pipeline_per_label()
 
+    def data_balancing(self):
+        self.__reporter.data_balancing()
+
 
 if __name__ == "__main__":
     Main()()

@@ -65,6 +65,98 @@ class Reporter:
             obj=heatmap, filename=f"{self.__figures_path}/classification_labels.html"
         )
 
+    def data_balancing(self):
+        top_n = 50
+        demographics = self.__extraction_instrument.demographics
+        diagnostic_class_numbers = self.__extraction_instrument.diagnostic_class_numbers
+        data_balancing = self.__extraction_instrument.data_balancing
+        print(demographics)
+        print(diagnostic_class_numbers)
+        print(data_balancing)
+        total_data = diagnostic_class_numbers.sum(axis=1).sort_values(ascending=False)
+        print(total_data)
+        selected_articles = total_data[:top_n].index
+        print(selected_articles)
+        demographics = demographics.iloc[selected_articles][
+            ["Male (count)", "Female (count)"]
+        ].rename(columns={"Male (count)": "Male", "Female (count)": "Female"})
+        class_numbers = diagnostic_class_numbers.iloc[selected_articles]
+        data_balancing = data_balancing.iloc[selected_articles]
+        print(demographics)
+        print(class_numbers)
+        print(data_balancing)
+
+        # X = np.arange(1, len(data_balancing) + 1)
+        fig, ax = plt.subplots(
+            3,
+            1,
+            figsize=(12, 12),
+            constrained_layout=True,
+            sharex=True,
+            gridspec_kw={"height_ratios": [2, 2, 1]},
+        )
+        class_numbers.plot(
+            ax=ax[0],
+            kind="bar",
+            stacked=True,
+            legend=False,
+            colormap=plt.colormaps.get("Spectral"),
+        )
+        ax[0].tick_params(labelsize=14)
+        ax[0].set_ylabel("(a) Samples per diagnosis", fontsize=16)
+        demographics.plot(
+            ax=ax[1],
+            kind="bar",
+            stacked=True,
+            legend=False,
+            # colormap=plt.colormaps.get("berlin"),
+            # colormap=plt.colormaps.get("summer"),
+            color=["#F38181", "#95E1D3"],
+        )
+        ax[1].invert_yaxis()
+        ax[1].legend(fontsize=14)
+        ax[1].set_ylabel("(b) Speaker count", fontsize=16)
+        ax[1].tick_params(labelsize=14)
+
+        db = data_balancing.reset_index()
+        db["index"] += 2
+        db["presence"] = 1
+        db = db.pivot(
+            index="Data Balancing", columns="index", values="presence"
+        ).fillna(0)
+        annots = (
+            db.copy().replace(to_replace=1, value="✔").replace(to_replace=0, value="")
+        )
+        sns.heatmap(
+            data=db,
+            ax=ax[2],
+            # cmap=["#142850", "#0C7B93"],
+            # cmap=["#ffffff", "#ffffff"],
+            cmap=["#ffffff", "#E8F9FF"],
+            annot=annots,
+            fmt="",
+            cbar=False,
+            # cmap=plt.colormaps.get("Spectral")
+        )
+        ax[2].set_ylabel("(c) Data Balancing", fontsize=16)
+        ax[2].tick_params(labelsize=14)
+        # ax[2].set_xticks(
+        #     ticks=range(len(selected_articles)),
+        #     labels=selected_articles + 2,
+        #     rotation=90,
+        # )
+        ax[2].set_xticklabels(ax[2].get_xticklabels(), rotation=90)
+        margin = 1
+        ax[2].set_xlim(0 - margin, len(selected_articles) + margin)
+        ax[2].set_xlabel("Article Index", fontsize=16)
+        fig.suptitle(
+            "Variability in data distribution across the literature",
+            fontsize=20,
+        )
+        fig.canvas.draw()
+        self.align_labels(axes_list=ax, axis="y")
+        fig.savefig(f"{self.__figures_path}/data_balancing.png", bbox_inches="tight")
+
     def pipeline_per_label(self):
         class_numbers = self.__extraction_instrument.class_usage(min_usage=5)
         print(class_numbers)
@@ -105,9 +197,9 @@ class Reporter:
             constrained_layout=True,
             sharex=True,
         )
-        heatmap(df=C1, ax=ax[0], cmap="YlGn", y_label="Input Data Type")
-        heatmap(df=C2, ax=ax[1], cmap="GnBu", y_label="Feature")
-        heatmap(df=C3, ax=ax[2], cmap="BuPu", y_label="Model")
+        heatmap(df=C1, ax=ax[0], cmap="YlGn", y_label="(a) Input Data Type")
+        heatmap(df=C2, ax=ax[1], cmap="GnBu", y_label="(b) Feature")
+        heatmap(df=C3, ax=ax[2], cmap="BuPu", y_label="(c) Model")
         ax[2].set_xlabel("Diagnostic Label", fontsize=18)
         fig.suptitle(
             "Frequency of usage of data type/feature/model per diagnostic label",
