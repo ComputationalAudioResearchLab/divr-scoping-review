@@ -103,7 +103,6 @@ class ExtractionInstrument:
     def input_data(self):
         return self.__workbook["Input Data"].iloc[: self.__num_articles][
             [
-                "Demographics Questions",
                 "Vowel /a/",
                 "Vowel /e/",
                 "Vowel /i/",
