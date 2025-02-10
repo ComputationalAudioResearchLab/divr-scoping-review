@@ -1,73 +1,14 @@
 label,min,max,mean,std
-Cleft Lip Palatte,99.65,99.65,99.65,
-Parkinsons,52.9,99.65,80.67750000000001,15.567956788590742
 Normal,39.5,99.65,82.06315789473685,14.746792799327153
+Parkinsons,52.9,99.65,80.67750000000001,15.567956788590742
 Nodules,75.08,99.6,87.44272727272727,7.578893178966293
-Oedemas,84.0,99.6,94.35333333333334,8.966522923259236
 Polyps,75.08,99.6,86.17545454545456,7.803679085708694
-Euphony,99.5,99.5,99.5,
-Hypofunction,99.5,99.5,99.5,
-Hyperfunction,99.4,99.5,99.45,0.07071067811865074
-"Others (Nodules, Cysts, Vocal Fold Paralysis)",99.46,99.46,99.46,
-A-P Squeezing,77.9,99.4,88.65,15.202795795510772
-Gastric Reflux,77.9,99.4,88.65,15.202795795510772
 Vocal Fold Paralysis,39.5,98.3,81.545,15.226864291568576
-Spasmodic Dysphonia,98.3,98.3,98.3,
 Functional Dysphonia,52.9,97.33,79.83999999999999,16.293462492668645
-Organic,52.9,97.33,75.115,31.416754288118305
-Organofunctional,97.33,97.33,97.33,
-Hyperkinetic Dysphonia,89.95,97.2,93.575,5.126524163602469
-Reflux Laryngitis,89.95,97.2,93.575,5.126524163602469
-Hypokinetic Dysphonia,89.95,97.2,93.575,5.126524163602469
 Unilateral Vocal Paralysis,74.9,95.77,87.75333333333333,9.294858076736118
-Laryngeal Neoplasm,68.48,95.77,84.786,11.775881283368983
-"Vocal Nodules, Polyps, Cysts",75.3,95.77,85.9375,11.084200091421415
-Adductor spasmodic Dysphonia,78.4,94.03,87.925,6.686087545543108
-Keratosis,94.03,94.03,94.03,
-Depression,52.9,94.0,80.3425,18.842587180816402
 Dysphonia,39.5,94.0,74.77833333333334,20.11411486162557
-Vocal fold edemas or nodules,93.9,93.9,93.9,
-Pathological disorders,93.89,93.89,93.89,
-Neurological Disorder,77.53,93.89,84.33999999999999,8.517223726074123
 Cysts,75.08,93.33,82.73666666666666,6.301195653736414
-Vocal fold paresis,92.0,92.0,92.0,
-Hyperfunctional Dysphonia,55.0,92.0,79.2,16.67013297287497
-Neoplasm,72.0,91.5,81.188,9.033591201731456
 Phonotrauma,68.48,91.5,79.54,8.779093672713927
+Neoplasm,72.0,91.5,81.188,9.033591201731456
 Vocal Palsy,68.48,91.5,80.20285714285714,9.263747827392747
-Apraxia of Speech,91.18,91.18,91.18,
-Dysarthria,91.18,91.18,91.18,
-Organic & Functional,91.14,91.14,91.14,
-Laryngeal cancer,89.83,90.0,89.91499999999999,0.12020815280171931
-Benign Mucosal Disease,89.83,89.83,89.83,
-Vocal Atrophy,89.27,89.27,89.27,
-Organic Vocal Fold Lesions,89.27,89.27,89.27,
-Recurrent Laryngeal Nerve Paralysis,55.0,88.0,71.5,23.33452377915607
 Laryngitis,55.0,88.0,75.82833333333333,13.513371772680074
-Sulcus Vocalis,85.0,85.0,85.0,
-Recurrent paresis,83.33,83.33,83.33,
-Morphological Alteration,83.33,83.33,83.33,
-Vox Senilis,83.0,83.0,83.0,
-Renkei's Edema,83.0,83.0,83.0,
-Central laryngeal motion disorder,83.0,83.0,83.0,
-Multiple System Atrophy,64.4,81.6,73.0,12.16223663640861
-Ventricular Compression,77.9,77.9,77.9,
-Other vocal diseases,77.53,77.53,77.53,
-Structural,57.0,77.53,67.265,14.51690221775982
-Glottic Neoplasm,74.9,75.3,75.1,0.28284271247460796
-Friedreich Ataxia,66.0,66.0,66.0,
-Multiple Sclerosis,66.0,66.0,66.0,
-Progressive supranuclear palsy,64.4,64.4,64.4,
-Non-Structural Dysphonia,57.0,57.0,57.0,
-Laryngitis Chronica,39.5,39.5,39.5,
-Contact Pachyderma,,,,
-Cordectomy,,,,
-Front Lateral Partial Resection,,,,
-Hyperthyroidism,,,,
-Hypothyroidism,,,,
-Laryngeal Pathologies,,,,
-Leukoplakia,,,,
-Mass Lesions,,,,
-Muscle Tension,,,,
-Neuromuscular,,,,
-Physiological disorders,,,,

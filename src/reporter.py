@@ -22,7 +22,8 @@ class Reporter:
         self.__figures_path = figures_path
 
     def accuracy_by_diag(self):
-        class_numbers = self.__extraction_instrument.diagnostic_class_numbers
+        class_numbers = self.__extraction_instrument.class_usage(min_usage=5)
+        # class_numbers = self.__extraction_instrument.diagnostic_class_numbers
         accuracy = self.__extraction_instrument.best_accuracy.reset_index(
             name="accuracy",
         ).rename(columns={"index": "article_index"})
@@ -42,9 +43,9 @@ class Reporter:
         )
         print(grouped)
         grouped.to_csv(f"{self.__figures_path}/accuracy_by_diag.csv", index=False)
-        fig, ax = plt.subplots(1, 1, figsize=(15, 10), constrained_layout=True)
+        fig, ax = plt.subplots(1, 1, figsize=(18, 6), constrained_layout=True)
         data = data.sort_values(by="accuracy", ascending=False)
-        min_accuracy = 50
+        min_accuracy = 0
         data = data[data["accuracy"] > min_accuracy]
         # sns.boxplot(
         #     data=data,
@@ -54,22 +55,37 @@ class Reporter:
         #     color="#79D7BE",
         #     linecolor="#4DA1A9",
         # )
-        sns.swarmplot(
-            data=data,
-            x="label",
-            y="accuracy",
+        # sns.swarmplot(
+        #     data=data,
+        #     x="label",
+        #     y="accuracy",
+        #     ax=ax,
+        #     hue="article_index",
+        #     legend=False,
+        #     palette="rainbow",
+        #     size=12,
+        # )
+        print(data)
+        data = data.pivot(index="label", columns="article_index", values="accuracy")
+        annots = data.fillna(-1).astype(int).astype(str).replace("-1", "")
+        sns.heatmap(
+            data=data.fillna(0),
             ax=ax,
-            hue="article_index",
-            legend=False,
-            palette="flare",
+            cmap="GnBu",
+            fmt="",
+            annot=annots,
         )
         ax.set_xticklabels(labels=ax.get_xticklabels(), rotation=90)
         ax.tick_params(labelsize=16)
-        ax.set_ylabel("Classification Accuracy", fontsize=18)
-        ax.set_xlabel("Diagnostic Label", fontsize=18)
-        fig.suptitle(
-            "Multi-class classification accuracy per diagnostic label", fontsize=20
-        )
+        ax.set_ylabel("Diagnostic Label", fontsize=18)
+        ax.set_xlabel("Article Index", fontsize=18)
+        fig.suptitle("Multi-class classification accuracy per article", fontsize=20)
+
+        # ax.set_ylabel("Classification Accuracy", fontsize=18)
+        # ax.set_xlabel("Diagnostic Label", fontsize=18)
+        # fig.suptitle(
+        #     "Multi-class classification accuracy per diagnostic label", fontsize=20
+        # )
         fig.savefig(f"{self.__figures_path}/accuracy_by_diag.png", bbox_inches="tight")
 
     def classification_labels(self):
