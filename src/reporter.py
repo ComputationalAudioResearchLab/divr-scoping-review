@@ -67,13 +67,15 @@ class Reporter:
         )
 
     def data_balancing(self):
-        top_n = 50
+        print
         demographics = self.__extraction_instrument.demographics
         diagnostic_class_numbers = self.__extraction_instrument.diagnostic_class_numbers
         data_balancing = self.__extraction_instrument.data_balancing
         print(demographics)
         print(diagnostic_class_numbers)
         print(data_balancing)
+        print(data_balancing.value_counts())
+        exit()
         total_data = diagnostic_class_numbers.sum(axis=1).sort_values(ascending=False)
         print(total_data)
         selected_articles = total_data[:top_n].index
@@ -227,7 +229,7 @@ class Reporter:
         )
         heatmap(df=C1, ax=ax[0], cmap="YlGn", y_label="(a) Input Data Type")
         heatmap(df=C2, ax=ax[1], cmap="GnBu", y_label="(b) Feature")
-        heatmap(df=C3, ax=ax[2], cmap="BuPu", y_label="(c) Model")
+        heatmap(df=C3, ax=ax[2], cmap="BuPu", y_label="(c) Modelling technique")
         ax[2].set_xlabel("Diagnostic Label", fontsize=18)
         fig.suptitle(
             "Frequency of usage of data type/feature/model per diagnostic label",
