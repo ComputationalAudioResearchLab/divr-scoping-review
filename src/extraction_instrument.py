@@ -31,6 +31,12 @@ class ExtractionInstrument:
         return self.__workbook["Main"]
 
     @property
+    def best_accuracy(self):
+        return self.__workbook["Main"]["Best multi-class classification accuracy"][
+            : self.__num_articles
+        ]
+
+    @property
     def classification_pipeline(self):
         return self.__workbook["Classification Pipeline"]
 

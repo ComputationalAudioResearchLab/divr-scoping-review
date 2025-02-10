@@ -36,6 +36,9 @@ class Main(ClassArgParser):
     def data_balancing(self):
         self.__reporter.data_balancing()
 
+    def accuracy_by_diag(self):
+        self.__reporter.accuracy_by_diag()
+
 
 if __name__ == "__main__":
     Main()()

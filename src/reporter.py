@@ -21,6 +21,57 @@ class Reporter:
         )
         self.__figures_path = figures_path
 
+    def accuracy_by_diag(self):
+        class_numbers = self.__extraction_instrument.diagnostic_class_numbers
+        accuracy = self.__extraction_instrument.best_accuracy.reset_index(
+            name="accuracy",
+        ).rename(columns={"index": "article_index"})
+        diags_in_articles = (
+            class_numbers.stack()
+            .reset_index()
+            .rename(
+                columns={"level_0": "article_index", "level_1": "label", 0: "count"}
+            )
+        )
+        data = pd.merge(left=diags_in_articles, right=accuracy, on="article_index")
+        grouped = (
+            data.groupby(by="label")["accuracy"]
+            .agg(["min", "max", "mean", "std"])
+            .sort_values(by="max", ascending=False)
+            .reset_index()
+        )
+        print(grouped)
+        grouped.to_csv(f"{self.__figures_path}/accuracy_by_diag.csv", index=False)
+        fig, ax = plt.subplots(1, 1, figsize=(15, 10), constrained_layout=True)
+        data = data.sort_values(by="accuracy", ascending=False)
+        min_accuracy = 50
+        data = data[data["accuracy"] > min_accuracy]
+        # sns.boxplot(
+        #     data=data,
+        #     x="label",
+        #     y="accuracy",
+        #     ax=ax,
+        #     color="#79D7BE",
+        #     linecolor="#4DA1A9",
+        # )
+        sns.swarmplot(
+            data=data,
+            x="label",
+            y="accuracy",
+            ax=ax,
+            hue="article_index",
+            legend=False,
+            palette="flare",
+        )
+        ax.set_xticklabels(labels=ax.get_xticklabels(), rotation=90)
+        ax.tick_params(labelsize=16)
+        ax.set_ylabel("Classification Accuracy", fontsize=18)
+        ax.set_xlabel("Diagnostic Label", fontsize=18)
+        fig.suptitle(
+            "Multi-class classification accuracy per diagnostic label", fontsize=20
+        )
+        fig.savefig(f"{self.__figures_path}/accuracy_by_diag.png", bbox_inches="tight")
+
     def classification_labels(self):
         # minimum articles that must use a given class
         min_usage_of_class = 5
@@ -67,7 +118,7 @@ class Reporter:
         )
 
     def data_balancing(self):
-        print
+        top_n = 50
         demographics = self.__extraction_instrument.demographics
         diagnostic_class_numbers = self.__extraction_instrument.diagnostic_class_numbers
         data_balancing = self.__extraction_instrument.data_balancing
@@ -75,7 +126,6 @@ class Reporter:
         print(diagnostic_class_numbers)
         print(data_balancing)
         print(data_balancing.value_counts())
-        exit()
         total_data = diagnostic_class_numbers.sum(axis=1).sort_values(ascending=False)
         print(total_data)
         selected_articles = total_data[:top_n].index
@@ -176,7 +226,6 @@ class Reporter:
         #     rotation=90,
         # )
         ax[2].set_xticklabels(ax[2].get_xticklabels(), rotation=90)
-        margin = 1
         # ax[2].set_xlim(0 - margin, len(selected_articles) + margin)
         ax[2].set_xlabel("Article Index", fontsize=16)
         fig.suptitle(
