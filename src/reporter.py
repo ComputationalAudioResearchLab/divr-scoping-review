@@ -115,10 +115,10 @@ class Reporter:
         handles, labels = ax[0].get_legend_handles_labels()
         selected_handles = []
         selected_labels = []
-        for handle, label in zip(handles, labels):
-            if label in top_labels:
-                selected_handles += [handle]
-                selected_labels += [label]
+        for label in top_labels:
+            label_idx = labels.index(label)
+            selected_handles += [handles[label_idx]]
+            selected_labels += [labels[label_idx]]
         empty_patch = mpatches.Patch(color="#ffffff")
         selected_handles += [empty_patch]
         selected_labels += [f"+{len(labels)-len(selected_labels)} more"]
