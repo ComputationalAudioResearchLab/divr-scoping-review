@@ -6,6 +6,7 @@ import holoviews as hv
 import circlify as circ
 import matplotlib.colorbar
 from pathlib import Path
+import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 
@@ -95,13 +96,34 @@ class Reporter:
             sharex=True,
             gridspec_kw={"height_ratios": [2, 2, 1]},
         )
+        class_numbers_cmap = plt.colormaps.get("Spectral")
         class_numbers.plot(
             ax=ax[0],
             kind="bar",
             stacked=True,
             legend=False,
-            colormap=plt.colormaps.get("Spectral"),
+            colormap=class_numbers_cmap,
         )
+        legend_count = 8
+        label_counts = (
+            self.__extraction_instrument.count_per_diagnostic_label.sort_values(
+                by="count", ascending=False
+            ).iloc[:legend_count]
+        )
+        print(label_counts)
+        top_labels = label_counts["label"].tolist()
+        handles, labels = ax[0].get_legend_handles_labels()
+        selected_handles = []
+        selected_labels = []
+        for handle, label in zip(handles, labels):
+            if label in top_labels:
+                selected_handles += [handle]
+                selected_labels += [label]
+        empty_patch = mpatches.Patch(color="#ffffff")
+        selected_handles += [empty_patch]
+        selected_labels += [f"+{len(labels)-len(selected_labels)} more"]
+        print(selected_labels)
+        ax[0].legend(handles=selected_handles, labels=selected_labels)
         ax[0].tick_params(labelsize=14)
         ax[0].set_ylabel("(a) Samples per diagnosis", fontsize=16)
         demographics.plot(

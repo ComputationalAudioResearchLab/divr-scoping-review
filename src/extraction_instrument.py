@@ -126,6 +126,17 @@ class ExtractionInstrument:
         ]
 
     @property
+    def count_per_diagnostic_label(self):
+        return (
+            self.diagnostic_class_numbers.stack()
+            .reset_index()
+            .groupby("level_1")[0]
+            .sum()
+            .reset_index()
+            .rename(columns={"level_1": "label", 0: "count"})
+        )
+
+    @property
     def diagnostic_class_numbers(self):
         return self.__workbook["Diagnostic class numbers"].iloc[: self.__num_articles][
             [
