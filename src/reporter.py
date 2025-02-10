@@ -93,7 +93,7 @@ class Reporter:
             1,
             figsize=(12, 12),
             constrained_layout=True,
-            sharex=True,
+            # sharex=True,
             gridspec_kw={"height_ratios": [2, 2, 1]},
         )
         class_numbers_cmap = plt.colormaps.get("Spectral")
@@ -126,6 +126,7 @@ class Reporter:
         ax[0].legend(handles=selected_handles, labels=selected_labels)
         ax[0].tick_params(labelsize=14)
         ax[0].set_ylabel("(a) Samples per diagnosis", fontsize=16)
+        ax[0].set_xticks(ax[0].get_xticks(), labels=[])
         demographics.plot(
             ax=ax[1],
             kind="bar",
@@ -139,6 +140,7 @@ class Reporter:
         ax[1].legend(fontsize=14)
         ax[1].set_ylabel("(b) Speaker count", fontsize=16)
         ax[1].tick_params(labelsize=14)
+        ax[1].set_xticks(ax[1].get_xticks(), labels=[])
 
         db = data_balancing.reset_index()
         db["index"] += 2
@@ -169,7 +171,7 @@ class Reporter:
         # )
         ax[2].set_xticklabels(ax[2].get_xticklabels(), rotation=90)
         margin = 1
-        ax[2].set_xlim(0 - margin, len(selected_articles) + margin)
+        # ax[2].set_xlim(0 - margin, len(selected_articles) + margin)
         ax[2].set_xlabel("Article Index", fontsize=16)
         fig.suptitle(
             "Variability in data distribution across the literature",
