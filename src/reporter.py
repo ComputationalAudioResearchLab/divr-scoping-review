@@ -123,9 +123,13 @@ class Reporter:
         selected_handles += [empty_patch]
         selected_labels += [f"+{len(labels)-len(selected_labels)} more"]
         print(selected_labels)
-        ax[0].legend(handles=selected_handles, labels=selected_labels)
+        ax[0].legend(
+            handles=selected_handles,
+            labels=selected_labels,
+            title="Labels (max to least count)",
+        )
         ax[0].tick_params(labelsize=14)
-        ax[0].set_ylabel("(a) Samples per diagnosis", fontsize=16)
+        ax[0].set_ylabel("(a) Samples per diagnostic label", fontsize=16)
         ax[0].set_xticks(ax[0].get_xticks(), labels=[])
         demographics.plot(
             ax=ax[1],
