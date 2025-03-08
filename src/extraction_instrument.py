@@ -91,19 +91,40 @@ class ExtractionInstrument:
 
     @property
     def features(self):
-        return self.__workbook["Features"].iloc[: self.__num_articles][
-            [
-                "Raw Audio",
-                "NN Features",
-                "Mel Spectrogram",
-                "MFCC",
-                "Wavelets",
-                "Glottal signal",
-                "Other audio processing features",
-                "Demographics/questionnaire",
-                "Custom",
+        return (
+            self.__workbook["Features"]
+            .iloc[: self.__num_articles][
+                [
+                    "Raw Audio",
+                    "NN Features",
+                    "Mel Spectrogram",
+                    "MFCC",
+                    "Wavelets",
+                    "Glottal signal",
+                    # "Other audio processing features",
+                    "Pitch and Fundamental Frequency (F0)",
+                    "Frequency-Related Features (Spectral Characteristics)",
+                    "Voice Quality (Phonation, Noise & Regularity)",
+                    "Intensity & Loudness",
+                    "Temporal & Rhythm Features",
+                    "Cepstral Features",
+                    "Irregular Voicing ",
+                    "Prosody & Fluency",
+                    "Demographics/questionnaire",
+                    "Custom",
+                ]
             ]
-        ]
+            .rename(
+                columns={
+                    "Pitch and Fundamental Frequency (F0)": "Pitch",
+                    "Frequency-Related Features (Spectral Characteristics)": "Spectral Characteristics",
+                    "Voice Quality (Phonation, Noise & Regularity)": "Voice Quality",
+                    "Temporal & Rhythm Features": "Temporal & Rhythm",
+                    "Irregular Voicing ": "Irregular Voicing",
+                    "Prosody & Fluency": "Prosody & Fluency",
+                }
+            )
+        )
 
     @property
     def input_data(self):
