@@ -70,7 +70,7 @@ class ExtractionInstrument:
     def models(self):
         return self.__workbook["Models"].iloc[: self.__num_articles][
             [
-                "Use Feature Selection",
+                # "Use Feature Selection",
                 "Ensemble of Models",
                 "DNN (complex NN arch)",
                 "ANN (simple NN arch)",
