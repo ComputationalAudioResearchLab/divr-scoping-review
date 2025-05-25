@@ -23,7 +23,6 @@ class Reporter:
 
     def accuracy_by_diag(self):
         class_numbers = self.__extraction_instrument.class_usage(min_usage=5)
-        # class_numbers = self.__extraction_instrument.diagnostic_class_numbers
         accuracy = self.__extraction_instrument.best_accuracy.reset_index(
             name="accuracy",
         ).rename(columns={"index": "article_index"})
@@ -195,6 +194,7 @@ class Reporter:
             handles=selected_handles,
             labels=selected_labels,
             title="Labels (max to least count)",
+            fontsize=14,
         )
         ax[0].tick_params(labelsize=14)
         ax[0].set_ylabel("(a) Samples per diagnostic label", fontsize=16)
@@ -215,7 +215,7 @@ class Reporter:
         ax[1].set_xticks(ax[1].get_xticks(), labels=[])
 
         db = data_balancing.reset_index()
-        db["index"] += 2
+        db["index"] += 1
         db["presence"] = 1
         db = db.pivot(
             index="Data Balancing", columns="index", values="presence"

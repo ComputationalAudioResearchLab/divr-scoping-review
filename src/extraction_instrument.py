@@ -8,7 +8,6 @@ class ExtractionInstrument:
 
     __sheets = [
         "Main",
-        "Classification Pipeline",
         "Train test set sizes",
         "Models",
         "Features",
@@ -21,7 +20,7 @@ class ExtractionInstrument:
         "Protocol Checklist",
     ]
 
-    __num_articles = 74
+    __num_articles = 80
 
     def __init__(self, data_file_path: Path) -> None:
         self.__workbook = pd.read_excel(data_file_path, sheet_name=self.__sheets)
@@ -42,12 +41,7 @@ class ExtractionInstrument:
 
     @property
     def data_balancing(self):
-        pipeline = self.__workbook["Classification Pipeline"][
-            ["Main File Index", "Data Balancing"]
-        ]
-        main_file_index = pipeline["Main File Index"].notna().to_numpy()
-        start_indices = main_file_index.nonzero()[0]
-        return pipeline["Data Balancing"].iloc[start_indices + 1].reset_index(drop=True)
+        return self.__workbook["Main"][["Data Balancing"]].iloc[: self.__num_articles]
 
     @property
     def train_test_set_sizes(self):
